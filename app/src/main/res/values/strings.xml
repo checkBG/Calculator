@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Калькулятор</string>
+    <string name="delete">Delete last symbol</string>
+</resources>
