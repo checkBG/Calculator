@@ -1,5 +1,6 @@
 package com.example.calculator.ui
 
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -17,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.calculator.utils.vibration
 
 @Composable
 fun CalculatorButton(
@@ -25,11 +27,12 @@ fun CalculatorButton(
     symbol: Char,
     contentColor: Color?,
     containerColor: Color?,
-    fontSize: TextUnit = 23.sp
+    fontSize: TextUnit = 23.sp,
+    context: Context,
 ) {
     ElevatedButton(
-        onClick = onClick,
-        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+        onClick = { onClick.vibration(context = context) },
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
         colors = ButtonDefaults.elevatedButtonColors(
             containerColor = containerColor ?: MaterialTheme.colorScheme.primary,
             contentColor = contentColor ?: MaterialTheme.colorScheme.scrim
@@ -52,11 +55,12 @@ fun CalculatorButtonWithImage(
     contentColor: Color?,
     containerColor: Color?,
     @DrawableRes image: Int,
-    @StringRes description: Int
+    @StringRes description: Int,
+    context: Context,
 ) {
     ElevatedButton(
-        onClick = onClick,
-        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+        onClick = { onClick.vibration(context) },
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
         colors = ButtonDefaults.elevatedButtonColors(
             containerColor = containerColor ?: MaterialTheme.colorScheme.primary,
             contentColor = contentColor ?: MaterialTheme.colorScheme.scrim

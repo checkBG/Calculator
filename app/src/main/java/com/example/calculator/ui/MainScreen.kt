@@ -1,7 +1,5 @@
 package com.example.calculator.ui
 
-import android.icu.text.DecimalFormat
-import android.icu.text.NumberFormat
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
@@ -24,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,7 +32,7 @@ import com.example.calculator.data.CalculatorButtonData
 import com.example.calculator.data.CalculatorButtonWithImageData
 import com.example.calculator.data.CalculatorButtonsData
 import com.example.calculator.ui.theme.CalculatorTheme
-import java.util.Locale
+import com.example.calculator.utils.toNumberFormat
 
 
 @Composable
@@ -65,21 +64,8 @@ fun MainScreen(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun TextsCurrentAndResult(mainViewModel: MainViewModel, result: Double?) {
     Column {
-        val numberFormat = NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat
-        numberFormat.minimumFractionDigits = 0
-        numberFormat.maximumFractionDigits = 10
         Text(
-            text = if (
-                Regex("^-?\\d+([.]\\d+)?$").matches(mainViewModel.expression) &&
-                ((Regex("-?[.]\\d+$").find(mainViewModel.expression)?.value?.length
-                    ?: 0) < 10)
-            ) {
-                numberFormat.format(mainViewModel.expression.toDouble())
-            } else {
-                mainViewModel.expression
-            }
-                .replace('/', '÷')
-                .replace('*', '×'),
+            text = mainViewModel.expression.toNumberFormat(),
             textAlign = TextAlign.Right,
             modifier = Modifier
                 .horizontalScroll(ScrollState(Int.MAX_VALUE))
@@ -93,13 +79,7 @@ fun TextsCurrentAndResult(mainViewModel: MainViewModel, result: Double?) {
             modifier = Modifier.align(alignment = Alignment.End)
         ) {
             Text(
-                text = if (result != null) {
-                    numberFormat.format(result)
-                        .replace('/', '÷')
-                        .replace('*', '×')
-                } else {
-                    ""
-                },
+                text = result.toNumberFormat(),
                 textAlign = TextAlign.Right,
                 color = Color.LightGray,
                 modifier = Modifier
@@ -116,6 +96,8 @@ fun TextsCurrentAndResult(mainViewModel: MainViewModel, result: Double?) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FlowRowOfButtons(mainViewModel: MainViewModel) {
+    val context = LocalContext.current
+
     FlowRow(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.Bottom,
@@ -134,7 +116,8 @@ fun FlowRowOfButtons(mainViewModel: MainViewModel) {
                         symbol = currentButton.symbol,
                         fontSize = currentButton.fontSize,
                         contentColor = currentButton.contentColor,
-                        containerColor = currentButton.containerColor
+                        containerColor = currentButton.containerColor,
+                        context = context
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -145,7 +128,8 @@ fun FlowRowOfButtons(mainViewModel: MainViewModel) {
                         image = currentButton.image,
                         description = currentButton.description,
                         contentColor = currentButton.contentColor,
-                        containerColor = currentButton.containerColor
+                        containerColor = currentButton.containerColor,
+                        context = context
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -208,7 +192,8 @@ fun ButtonPreview() {
                 symbol = '2',
                 fontSize = 25.sp,
                 containerColor = null,
-                contentColor = null
+                contentColor = null,
+                context = LocalContext.current
             )
         }
     }
