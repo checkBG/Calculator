@@ -13,14 +13,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -28,16 +31,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.calculator.data.Calculator
 import com.example.calculator.data.CalculatorButtonData
 import com.example.calculator.data.CalculatorButtonWithImageData
 import com.example.calculator.data.CalculatorButtonsData
 import com.example.calculator.ui.theme.CalculatorTheme
+import com.example.calculator.utils.allNumbersToNumberFormat
+import com.example.calculator.utils.drawNeonStroke
+import com.example.calculator.utils.redundantDoubleFormat
 import com.example.calculator.utils.toNumberFormat
 
 
 @Composable
 fun MainScreen(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
-    val result by mainViewModel.calculator.collectAsState(initial = null)
+    val result by mainViewModel.calculator.collectAsState(initial = Calculator(mainViewModel.expression))
     Log.d("result", result.toString())
     Log.d("expression", mainViewModel.expression)
 
@@ -50,7 +57,7 @@ fun MainScreen(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.End
         ) {
-            TextsCurrentAndResult(mainViewModel = mainViewModel, result = result)
+            TextsCurrentAndResult(expression = mainViewModel.expression, result = result.result)
 
             Spacer(modifier = Modifier.height(45.dp))
             HorizontalDividers()
@@ -62,24 +69,43 @@ fun MainScreen(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TextsCurrentAndResult(mainViewModel: MainViewModel, result: Double?) {
-    Column {
-        Text(
-            text = mainViewModel.expression.toNumberFormat(),
-            textAlign = TextAlign.Right,
-            modifier = Modifier
-                .horizontalScroll(ScrollState(Int.MAX_VALUE))
-                .align(alignment = Alignment.End),
-            fontSize = 50.sp,
-            overflow = TextOverflow.Visible,
-            softWrap = false
-        )
+fun TextsCurrentAndResult(
+    expression: String,
+    result: Double?,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        if (expression != "") {
+            Text(
+                text = expression.allNumbersToNumberFormat(),
+                textAlign = TextAlign.Right,
+                modifier = Modifier
+                    .horizontalScroll(ScrollState(Int.MAX_VALUE))
+                    .align(alignment = Alignment.End),
+                fontSize = 50.sp,
+                overflow = TextOverflow.Visible,
+                softWrap = false,
+            )
+        } else {
+            VerticalDivider(
+                modifier = Modifier
+                    .height(50.dp)
+                    .width(1.dp)
+                    .drawWithContent {
+                        drawContent()
+                        drawNeonStroke(radius = 1.dp, color = Color(0xFF2a50ea), width = 15f)
+                    },
+                color = Color(0xFF2a50ea),
+                thickness = 1.dp
+            )
+        }
+
         AnimatedVisibility(
             visible = result != null,
             modifier = Modifier.align(alignment = Alignment.End)
         ) {
             Text(
-                text = result.toNumberFormat(),
+                text = result.redundantDoubleFormat().toNumberFormat().replace('.', ','),
                 textAlign = TextAlign.Right,
                 color = Color.LightGray,
                 modifier = Modifier

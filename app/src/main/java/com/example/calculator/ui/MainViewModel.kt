@@ -5,49 +5,58 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.calculator.data.Calculator
-import com.example.calculator.utils.toNumberFormat
+import com.example.calculator.utils.redundantDoubleFormat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class MainViewModel : ViewModel() {
-    var expression by mutableStateOf("0")
+    var expression by mutableStateOf("")
         private set
 
-    private val _calculator = MutableStateFlow(Calculator.calculator(expression))
-    val calculator: Flow<Double?>
+    private val _calculator = MutableStateFlow(Calculator(string = expression))
+    val calculator: Flow<Calculator>
         get() = _calculator.asStateFlow()
 
     private fun onClick() {
         _calculator.update {
-            Calculator.calculator(expression)
+            Calculator(string = expression)
+        }
+    }
+
+    private fun requireIsNotResult() {
+        if (_calculator.value.isResult) {
+            _calculator.value.isResult = false
+            expression = ""
         }
     }
 
     fun onClearClick() {
-        expression = "0"
+        requireIsNotResult()
+        expression = ""
         onClick()
     }
 
     fun onDeleteLastCharClick() {
-        expression = if (expression.length > 1) expression.dropLast(1) else "0"
+        expression = expression.dropLast(1)
         onClick()
     }
 
     fun onEqualsClick() {
-        expression = if (_calculator.value != null) {
-            _calculator.value.toNumberFormat()
+        expression = if (_calculator.value.result != null) {
+            _calculator.value.result.redundantDoubleFormat()
         } else {
-            "Error"
+            "Ошибка"
         }
         onClick()
+        _calculator.value.isResult = true
     }
 
     fun onNumeralClick(numeral: Char) {
+        requireIsNotResult()
         if (
-            Regex(".*[-*/+]0$").matches(expression) ||
-            expression == "0"
+            Regex(".*[-*/+]0$").matches(expression)
         ) {
             expression = expression.dropLast(1) + numeral
             onClick()
@@ -58,9 +67,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun onActionClick(action: Char) {
-//        Log.d("expressionF", expression)
-        if (expression == "Error") {
-            expression = "0"
+        if (expression == "Ошибка" || expression == "Infinity") {
+            requireIsNotResult()
         }
 
         if (action == '.') {
@@ -88,7 +96,7 @@ class MainViewModel : ViewModel() {
             onClick()
             return
         }
-        if (expression.isNotEmpty() && expression != "-" && expression.last() in "*-+/") {
+        if (expression.isNotEmpty() && expression != "-" && expression.last() in "*-+/(") {
             expression = expression.dropLast(1) + action
             onClick()
             return
@@ -101,6 +109,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun onBracesClick(brace: Char) {
+        requireIsNotResult()
         val isLastSymbolOfExpressionIsAction = expression.last() in "*-+/"
         if (isLastSymbolOfExpressionIsAction) {
             if (brace == ')') {
@@ -121,8 +130,8 @@ class MainViewModel : ViewModel() {
 
         }
 
-        if (expression == "0" && brace == '(') {
-            expression = brace.toString()
+        if (Regex(".*[-*/+]0$").matches(expression) && brace == '(') {
+            expression = expression.dropLast(1) + brace
             onClick()
             return
         }

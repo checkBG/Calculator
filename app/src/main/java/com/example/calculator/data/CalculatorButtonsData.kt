@@ -6,7 +6,7 @@ import com.example.calculator.R
 import com.example.calculator.ui.MainViewModel
 
 class CalculatorButtonsData(mainViewModel: MainViewModel) {
-    private val colorForActions = Color(0xFF0F341f)
+    private val colorForActions = Color(0xFF94FFCD)
 
     val listOfButtons = listOf(
         CalculatorButtonData(

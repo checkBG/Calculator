@@ -4,10 +4,14 @@ import android.util.Log
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-object Calculator {
-    fun calculator(string: String): Double? {
+class Calculator(string: String) {
+    val result = calculator(string = string)
+    var isResult = false
+
+    private fun calculator(string: String): Double? {
         try {
-            var stringExpressionWithoutBraces = string.trimEnd('+', '*', '-', '/', '.', '(')
+            var stringExpressionWithoutBraces =
+                string.trimEnd('+', '*', '-', '/', '.', '(').replace(" ", "")
             while (stringExpressionWithoutBraces.count { it == '(' } > stringExpressionWithoutBraces.count { it == ')' }) {
                 stringExpressionWithoutBraces += ")"
             }
@@ -88,7 +92,10 @@ object Calculator {
                 '*' -> firstOperandWithoutLastChar * secondOperandWithoutLastChar
                 '/' -> firstOperandWithoutLastChar.divide(
                     secondOperandWithoutLastChar,
-                    50,
+                    maxOf(
+                        secondOperandWithoutLastChar.toString().length - firstOperandWithoutLastChar.toString().length + 20,
+                        50
+                    ),
                     RoundingMode.HALF_UP
                 )
 
