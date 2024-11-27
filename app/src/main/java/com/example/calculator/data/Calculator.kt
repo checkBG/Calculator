@@ -46,10 +46,7 @@ class Calculator(string: String) {
                 expressions.indexOfFirst { it.endsWith('*') || it.endsWith('/') } // поиск индекса числа, после которого идёт операция (* или /), то есть учитывается математический порядок
             while (mulOrDivIndex != -1) { // если такого числа нет, то вёрнётся -1
                 expressions[mulOrDivIndex] =
-                    action(
-                        firstOperand = expressions[mulOrDivIndex],
-                        secondOperand = expressions[mulOrDivIndex + 1]
-                    )
+                    (expressions[mulOrDivIndex] action expressions[mulOrDivIndex + 1])
                         ?: throw Exception("cannot execute the function") // меняем по индексу число на результат (число1 операция число2)
                 expressions.removeAt(mulOrDivIndex + 1) // удаляем число2, которым было умножено или поделено число1 (знак числа2 переносится в их результат для дальнейшей корректной работы алгоритма)
                 mulOrDivIndex =
@@ -60,10 +57,7 @@ class Calculator(string: String) {
                 expressions.indexOfFirst { it.endsWith('-') || it.endsWith('+') } // поиск индекса числа, после которого идёт операция (+ или -), то есть учитывается математический порядок
             while (plusOrMinusIndex != -1) { // если такого числа нет, то вёрнётся -1
                 expressions[plusOrMinusIndex] =
-                    action(
-                        firstOperand = expressions[plusOrMinusIndex],
-                        secondOperand = expressions[plusOrMinusIndex + 1]
-                    )
+                    (expressions[plusOrMinusIndex] action expressions[plusOrMinusIndex + 1])
                         ?: throw Exception("cannot execute the function") // меняем по индексу число на результат (число1 операция число2)
                 expressions.removeAt(plusOrMinusIndex + 1) // удаляем число2, которым было сложено или вычтено число1 (знак числа2 переносится в их результат для дальнейшей корректной работы алгоритма)
                 plusOrMinusIndex =
@@ -77,11 +71,11 @@ class Calculator(string: String) {
         }
     }
 
-    private fun action(firstOperand: String, secondOperand: String): String? {
+    private infix fun String.action(secondOperand: String): String? {
         try {
             val firstOperandWithoutLastChar =
-                BigDecimal(firstOperand.dropLast(1)) // берём число, которое удовлетворяет шаблону
-            val firstOperandLastChar = firstOperand.last() // берём знак числа1
+                BigDecimal(this.dropLast(1)) // берём число, которое удовлетворяет шаблону
+            val firstOperandLastChar = this.last() // берём знак числа1
             val secondOperandWithoutLastChar =
                 BigDecimal(Regex("-?\\d+(.\\d+)?([eE]\\d+)?").find(secondOperand)!!.value) // берём число, удовлетворяющее шаблону
             val secondOperandLastChar = Regex("[*\\-+/]$").find(secondOperand)?.value

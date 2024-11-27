@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.utils.drawNeonStroke
+import com.example.calculator.utils.thenIf
 import com.example.calculator.utils.vibration
 
 @Composable
@@ -29,7 +31,6 @@ fun CalculatorButton(
     modifier: Modifier = Modifier,
     symbol: Char,
     contentColor: Color?,
-    containerColor: Color?,
     fontSize: TextUnit = 23.sp,
     context: Context,
 ) {
@@ -39,18 +40,24 @@ fun CalculatorButton(
         colors = ButtonDefaults.elevatedButtonColors(
 //            containerColor = containerColor ?: MaterialTheme.colorScheme.primary,
 //            contentColor = contentColor ?: MaterialTheme.colorScheme.scrim
-            contentColor = contentColor ?: Color(0xFF2a50ea)
+            contentColor = contentColor ?: if (isSystemInDarkTheme()) {
+                Color(0xFF2a50ea)
+            } else {
+                Color(0xFF000000)
+            }
 //            contentColor = Color(0xFF94FFCD)
         ),
         modifier = modifier
             .size(72.dp)
-            .drawWithContent {
-                drawContent()
-                drawNeonStroke(
-                    radius = 90.dp,
-                    color = Color(0xFF2A50EA)
+            .thenIf(isSystemInDarkTheme()) {
+                drawWithContent {
+                    drawContent()
+                    drawNeonStroke(
+                        radius = 90.dp,
+                        color = Color(0xFF2A50EA)
 //                    color = Color(0xFF94FFCD)
-                )
+                    )
+                }
             }
     ) {
         Text(
@@ -66,7 +73,6 @@ fun CalculatorButtonWithImage(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentColor: Color?,
-    containerColor: Color?,
     @DrawableRes image: Int,
     @StringRes description: Int,
     context: Context,
@@ -76,24 +82,32 @@ fun CalculatorButtonWithImage(
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
         colors = ButtonDefaults.elevatedButtonColors(
 //            containerColor = containerColor ?: MaterialTheme.colorScheme.primary,
-            contentColor = contentColor ?: MaterialTheme.colorScheme.scrim
+            contentColor = contentColor ?: MaterialTheme.colorScheme.onTertiary
         ),
         modifier = modifier
             .size(72.dp)
-            .drawWithContent {
-                drawContent()
-                drawNeonStroke(
-                    radius = 72.dp,
-                    color = Color(0xFF2A50EA),
+            .thenIf(isSystemInDarkTheme()) {
+                drawWithContent {
+                    drawContent()
+                    drawNeonStroke(
+                        radius = 72.dp,
+                        color = Color(0xFF2A50EA),
 //                    color = Color(0xFF94FFCD)
-                )
+                    )
+                }
             }
     ) {
         Image(
             painter = painterResource(id = image),
             contentDescription = stringResource(id = description),
             contentScale = ContentScale.FillWidth,
-            colorFilter = ColorFilter.tint(color = Color(0xFF94FFCD))
+            colorFilter = ColorFilter.tint(
+                color = if (isSystemInDarkTheme()) {
+                    Color(0xFF94FFCD)
+                } else {
+                    contentColor ?: Color(0xFF000000)
+                }
+            )
         )
     }
 }

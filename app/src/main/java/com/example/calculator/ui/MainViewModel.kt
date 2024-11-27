@@ -5,11 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.calculator.data.Calculator
+import com.example.calculator.utils.endsWith
 import com.example.calculator.utils.redundantDoubleFormat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.math.exp
 
 class MainViewModel : ViewModel() {
     var expression by mutableStateOf("")
@@ -72,31 +74,24 @@ class MainViewModel : ViewModel() {
         }
 
         if (action == '.') {
-            if (expression.isNotEmpty() && expression.last() in "0123456789") {
+            if (expression.endsWith(regex = Regex(".*\\d$"))) {
                 if (expression.takeLastWhile { it !in "*-+/(" }.count { it == '.' } == 0) {
                     expression += '.'
                     onClick()
                     return
                 }
-                onClick()
                 return
             } else {
-                onClick()
                 return
             }
         }
-        if (expression == "0" && action == '-') {
-            expression = "-"
-            onClick()
-            return
-        }
 
-        if ((expression.length == 1 && expression == "-" && action == '+')) {
-            expression = "0"
+        if ((expression == "-" && action == '+' || expression.endsWith(regex = Regex("[(]-$")))) {
+            expression = expression.dropLast(1)
             onClick()
             return
         }
-        if (expression.isNotEmpty() && expression != "-" && expression.last() in "*-+/(") {
+        if (expression != "-" && expression.endsWith(regex = Regex("[*-+/]$"))) {
             expression = expression.dropLast(1) + action
             onClick()
             return
@@ -110,7 +105,7 @@ class MainViewModel : ViewModel() {
 
     fun onBracesClick(brace: Char) {
         requireIsNotResult()
-        val isLastSymbolOfExpressionIsAction = expression.last() in "*-+/"
+        val isLastSymbolOfExpressionIsAction = expression.endsWith(Regex("[*-+/]$"))
         if (isLastSymbolOfExpressionIsAction) {
             if (brace == ')') {
                 expression = expression.dropLast(1) + brace
@@ -126,17 +121,10 @@ class MainViewModel : ViewModel() {
                 expression += brace
                 onClick()
                 return
+            } else if (brace == '(') {
+                expression += "*$brace"
+                onClick()
             }
-
         }
-
-        if (Regex(".*[-*/+]0$").matches(expression) && brace == '(') {
-            expression = expression.dropLast(1) + brace
-            onClick()
-            return
-        }
-
-        expression += brace
-        onClick()
     }
 }

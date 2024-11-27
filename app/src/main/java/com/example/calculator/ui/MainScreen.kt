@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -39,6 +40,7 @@ import com.example.calculator.ui.theme.CalculatorTheme
 import com.example.calculator.utils.allNumbersToNumberFormat
 import com.example.calculator.utils.drawNeonStroke
 import com.example.calculator.utils.redundantDoubleFormat
+import com.example.calculator.utils.thenIf
 import com.example.calculator.utils.toNumberFormat
 
 
@@ -91,9 +93,11 @@ fun TextsCurrentAndResult(
                 modifier = Modifier
                     .height(50.dp)
                     .width(1.dp)
-                    .drawWithContent {
-                        drawContent()
-                        drawNeonStroke(radius = 1.dp, color = Color(0xFF2a50ea), width = 15f)
+                    .thenIf(isSystemInDarkTheme()) {
+                        drawWithContent {
+                            drawContent()
+                            drawNeonStroke(radius = 1.dp, color = Color(0xFF2a50ea), width = 15f)
+                        }
                     },
                 color = Color(0xFF2a50ea),
                 thickness = 1.dp
@@ -133,7 +137,10 @@ fun FlowRowOfButtons(mainViewModel: MainViewModel) {
             .padding(bottom = 25.dp),
     ) {
         val listOfButtons =
-            CalculatorButtonsData(mainViewModel = mainViewModel).listOfButtons
+            CalculatorButtonsData(
+                mainViewModel = mainViewModel,
+                isDarkTheme = isSystemInDarkTheme()
+            ).listOfButtons
         listOfButtons.forEach { currentButton ->
             if (currentButton is CalculatorButtonData) {
                 Column {
@@ -142,7 +149,6 @@ fun FlowRowOfButtons(mainViewModel: MainViewModel) {
                         symbol = currentButton.symbol,
                         fontSize = currentButton.fontSize,
                         contentColor = currentButton.contentColor,
-                        containerColor = currentButton.containerColor,
                         context = context
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -154,7 +160,6 @@ fun FlowRowOfButtons(mainViewModel: MainViewModel) {
                         image = currentButton.image,
                         description = currentButton.description,
                         contentColor = currentButton.contentColor,
-                        containerColor = currentButton.containerColor,
                         context = context
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -217,7 +222,6 @@ fun ButtonPreview() {
                 onClick = { /*TODO*/ },
                 symbol = '2',
                 fontSize = 25.sp,
-                containerColor = null,
                 contentColor = null,
                 context = LocalContext.current
             )

@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.math.BigDecimal
 
 fun (() -> Unit).vibration(context: Context) {
     this.invoke()
@@ -30,12 +32,21 @@ fun (() -> Unit).vibration(context: Context) {
     vibrator.vibrate(vibrationEffect)
 }
 
+fun String.removeExponentialNotation(minPow: Int): String {
+    val exponent = Regex("(?<=E)\\d+").find(this)?.value?.toInt() ?: return this
+    if (exponent < minPow) {
+        return BigDecimal(this).toPlainString()
+    }
+    return this
+}
+
 fun Double?.redundantDoubleFormat(): String {
     if (this == null) {
         return ""
     }
     return this.toString()
         .replace(Regex("[.]0+$"), "")
+        .removeExponentialNotation(minPow = 15)
 }
 
 fun String.toNumberFormat(separator: String = " "): String {
@@ -100,8 +111,12 @@ fun ContentDrawScope.drawNeonStroke(radius: Dp, color: Color, width: Float = 25f
     }
 }
 
+inline fun Modifier.thenIf(condition: Boolean, other: Modifier.() -> Modifier): Modifier {
+    return if (condition) other() else this
+}
 
-
+fun CharSequence.endsWith(regex: Regex): Boolean =
+    this.isNotEmpty() && regex.matches(this)
 
 
 

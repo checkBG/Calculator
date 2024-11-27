@@ -5,8 +5,8 @@ import androidx.compose.ui.unit.sp
 import com.example.calculator.R
 import com.example.calculator.ui.MainViewModel
 
-class CalculatorButtonsData(mainViewModel: MainViewModel) {
-    private val colorForActions = Color(0xFF94FFCD)
+class CalculatorButtonsData(mainViewModel: MainViewModel, isDarkTheme: Boolean) {
+    private val colorForActions = if (isDarkTheme) Color(0xFF94FFCD) else Color(0xFF16817A)
 
     val listOfButtons = listOf(
         CalculatorButtonData(
@@ -31,6 +31,7 @@ class CalculatorButtonsData(mainViewModel: MainViewModel) {
             onClick = { mainViewModel.onDeleteLastCharClick() },
             image = R.drawable.delete,
             description = R.string.delete,
+            contentColor = colorForActions
         ),
         CalculatorButtonData(
             onClick = { mainViewModel.onNumeralClick(numeral = '7') },
