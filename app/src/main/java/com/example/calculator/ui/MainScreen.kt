@@ -46,7 +46,7 @@ import com.example.calculator.utils.toNumberFormat
 
 @Composable
 fun MainScreen(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
-    val result by mainViewModel.calculator.collectAsState(initial = Calculator(mainViewModel.expression))
+    val result by mainViewModel.calculator.collectAsState()
     Log.d("result", result.toString())
     Log.d("expression", mainViewModel.expression)
 

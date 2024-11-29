@@ -7,18 +7,17 @@ import androidx.lifecycle.ViewModel
 import com.example.calculator.data.Calculator
 import com.example.calculator.utils.endsWith
 import com.example.calculator.utils.redundantDoubleFormat
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.math.exp
 
 class MainViewModel : ViewModel() {
     var expression by mutableStateOf("")
         private set
 
     private val _calculator = MutableStateFlow(Calculator(string = expression))
-    val calculator: Flow<Calculator>
+    val calculator: StateFlow<Calculator>
         get() = _calculator.asStateFlow()
 
     private fun onClick() {
@@ -63,9 +62,10 @@ class MainViewModel : ViewModel() {
             expression = expression.dropLast(1) + numeral
             onClick()
             return
+        } else if (!expression.endsWith(')')) {
+            expression += numeral // 0123456789
+            onClick()
         }
-        expression += numeral // 0123456789
-        onClick()
     }
 
     fun onActionClick(action: Char) {
@@ -74,29 +74,28 @@ class MainViewModel : ViewModel() {
         }
 
         if (action == '.') {
-            if (expression.endsWith(regex = Regex(".*\\d$"))) {
-                if (expression.takeLastWhile { it !in "*-+/(" }.count { it == '.' } == 0) {
-                    expression += '.'
-                    onClick()
-                    return
-                }
-                return
-            } else {
+            if (Regex("\\d+([.]\\d*)(E\\d+)?$").find(expression)?.value == null) {
+                expression += '.'
+                onClick()
                 return
             }
-        }
-
-        if ((expression == "-" && action == '+' || expression.endsWith(regex = Regex("[(]-$")))) {
-            expression = expression.dropLast(1)
-            onClick()
             return
         }
-        if (expression != "-" && expression.endsWith(regex = Regex("[*-+/]$"))) {
+
+        if (expression == "-" || expression.endsWith(regex = Regex(".*[(]-$"))) {
+            if (action == '+') {
+                expression = expression.dropLast(1)
+                onClick()
+                return
+            }
+            return
+        }
+        if (expression != "-" && expression.endsWith(regex = Regex(".*[-*+/.]$"))) {
             expression = expression.dropLast(1) + action
             onClick()
             return
         }
-        if ((expression.isNotEmpty() && expression != "-") || (action == '-' && expression != "-")) {
+        if ((expression.isNotEmpty() && !expression.endsWith('(')) || (action == '-')) {
             expression += action // /*-+.
             onClick()
             return
@@ -105,9 +104,10 @@ class MainViewModel : ViewModel() {
 
     fun onBracesClick(brace: Char) {
         requireIsNotResult()
-        val isLastSymbolOfExpressionIsAction = expression.endsWith(Regex("[*-+/]$"))
-        if (isLastSymbolOfExpressionIsAction) {
-            if (brace == ')') {
+        val isLastSymbolIsActionOrExpressionIsEmpty =
+            expression.endsWith(Regex(".*[-*+/(]$")) || expression.isEmpty()
+        if (isLastSymbolIsActionOrExpressionIsEmpty) {
+            if (brace == ')' && expression.isNotEmpty() && !expression.endsWith(regex = Regex(".*([(]|-)$"))) {
                 expression = expression.dropLast(1) + brace
                 onClick()
                 return
@@ -121,7 +121,7 @@ class MainViewModel : ViewModel() {
                 expression += brace
                 onClick()
                 return
-            } else if (brace == '(') {
+            } else {
                 expression += "*$brace"
                 onClick()
             }

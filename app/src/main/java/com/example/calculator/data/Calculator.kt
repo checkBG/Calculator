@@ -11,7 +11,8 @@ class Calculator(string: String) {
     private fun calculator(string: String): Double? {
         try {
             var stringExpressionWithoutBraces =
-                string.trimEnd('+', '*', '-', '/', '.', '(').replace(" ", "")
+                string.trimEnd('+', '*', '-', '/', '.', '(', 'E', 'e')
+                    .replace("-(", "-1*(")
             while (stringExpressionWithoutBraces.count { it == '(' } > stringExpressionWithoutBraces.count { it == ')' }) {
                 stringExpressionWithoutBraces += ")"
             }
